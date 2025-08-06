@@ -1,6 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { ApiResponse } from '../types/index.js';
+import { ApiResponse } from '../types';
+import asyncHandler from "express-async-handler";
+import {v4 as uuidv4} from 'uuid';
+import { supabase } from "../integrations/supabase/client";
 
 const router = Router();
 
@@ -42,5 +45,47 @@ router.post('/example', (req: Request, res: Response<ApiResponse>) => {
     }
   }
 });
+
+router.post("/v1/prompt/first", asyncHandler(async (req, res) => {
+  // TODO: Check if dev-server is already created. If so, return with error.
+  const body = req.body;
+
+  const accessToken = req.header("X-Adorable-AccessToken");
+  if (!accessToken) {
+    const errorMessage = "Missing access token";
+    console.error(errorMessage);
+    res.status(400).json({ "error": errorMessage });
+    return;
+  }
+
+  const { data, error } = await supabase.auth.getUser(accessToken);
+  if (error) {
+    const errorMessage = error.message;
+    console.error(errorMessage);
+    res.status(403).json({ "error": errorMessage });
+    return;
+  }
+
+  const userId = req.header("X-Adorable-UserId");
+
+  if (!userId) {
+    const errorMessage = "Missing user id";
+    console.error(errorMessage);
+    res.status(400).json({ "error": errorMessage });
+    return;
+  }
+
+  if (userId != data.user?.id) {
+    const errorMessage = "Claimed / actual user id mismatch";
+    console.error(errorMessage);
+    res.status(400).json({ "error": errorMessage });
+    return;
+  }
+
+  const projectId = uuidv4();
+
+  // For now, just ignore the prompt and
+    res.send({ "projectId": projectId, "userId": userId, "accessToken": accessToken });
+}));
 
 export default router;
