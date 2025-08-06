@@ -1,0 +1,6 @@
+name: adorable
+services:
+  dev-server:
+    build: dev-server
+    ports:
+      - "3000:8080"
