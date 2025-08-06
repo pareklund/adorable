@@ -2,7 +2,8 @@ FROM node:22-alpine
 
 RUN apk add --no-cache git curl
 
-RUN git clone https://github.com/pareklund/adorable-template.git app
+COPY scaffolding/common/ app/
+COPY scaffolding/ts-react-vite-tailwind/ app/
 
 WORKDIR /app
 
