@@ -6,15 +6,33 @@ services:
       dockerfile: client/Dockerfile
     ports:
       - "3000:8080"
+  workspace-init:
+    build: 
+      context: .
+      dockerfile: backend/Dockerfile
+    volumes:
+      - ./workspace:/workspace-mount
+    command: sh -c "cp -r /workspace/* /workspace-mount/ 2>/dev/null || true"
+    restart: "no"
   backend:
     build: 
       context: .
       dockerfile: backend/Dockerfile
     ports:
       - "3001:8080"
+    volumes: 
+      - ./workspace:/workspace
+    depends_on:
+      workspace-init:
+        condition: service_completed_successfully
   dev-server:
     build: 
       context: .
       dockerfile: dev-server/Dockerfile
     ports:
       - "3002:8080"      
+    volumes: 
+      - ./workspace:/app
+    depends_on:
+      workspace-init:
+        condition: service_completed_successfully            

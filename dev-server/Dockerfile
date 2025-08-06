@@ -7,9 +7,12 @@ COPY scaffolding/ts-react-vite-tailwind/ app/
 
 WORKDIR /app
 
-RUN npm install
+# RUN npm install
 
 EXPOSE 8080
 
-CMD ["npm", "run", "dev"]
+ADD dev-server/start.sh /
+RUN chmod +x /start.sh
+
+CMD ["/start.sh"]
 
