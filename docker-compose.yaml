@@ -1,8 +1,14 @@
 name: adorable
 services:
+  client:
+    build: 
+      context: .
+      dockerfile: client/Dockerfile
+    ports:
+      - "2000:8080"
   dev-server:
     build: 
       context: .
       dockerfile: dev-server/Dockerfile
     ports:
-      - "3000:8080"
+      - "3000:8080"      
