@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      adorable_chat_history: {
+        Row: {
+          created_at: string
+          id: string
+          issuer: Database["public"]["Enums"]["chat_issuer"]
+          message: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issuer: Database["public"]["Enums"]["chat_issuer"]
+          message: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issuer?: Database["public"]["Enums"]["chat_issuer"]
+          message?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adorable_chat_history_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "adorable_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       adorable_projects: {
         Row: {
           created_at: string
@@ -52,7 +84,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      chat_issuer: "user" | "adorable"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -179,6 +211,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      chat_issuer: ["user", "adorable"],
+    },
   },
 } as const

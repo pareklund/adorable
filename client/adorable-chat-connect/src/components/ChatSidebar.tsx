@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, ArrowUp, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from '@supabase/supabase-js';
+import adorableLogo from "@/assets/adorable-logo.png";
 import {
   Sidebar,
   SidebarContent,
@@ -13,24 +14,93 @@ import {
 
 interface ChatMessage {
   id: string;
-  title: string;
-  timestamp: Date;
+  message: string;
+  issuer: 'user' | 'adorable';
+  created_at: string;
 }
 
 interface ChatSidebarProps {
   user: User | null;
   onNewChat: () => void;
   isOpen: boolean;
+  onChatHistoryChange: (hasHistory: boolean) => void;
 }
 
-const ChatSidebar = ({ user, onNewChat, isOpen }: ChatSidebarProps) => {
+const ChatSidebar = ({ user, onNewChat, isOpen, onChatHistoryChange }: ChatSidebarProps) => {
   const [prompt, setPrompt] = useState("");
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
-    { id: "1", title: "Create a landing page for my...", timestamp: new Date() },
-    { id: "2", title: "Build a todo app with...", timestamp: new Date(Date.now() - 86400000) },
-    { id: "3", title: "Design a dashboard for...", timestamp: new Date(Date.now() - 172800000) },
-  ]);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [currentProject, setCurrentProject] = useState<any>(null);
+  const [hoveredMessage, setHoveredMessage] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Listen for project changes
+  useEffect(() => {
+    const handleProjectChanged = () => {
+      if (user) {
+        fetchCurrentProject();
+      }
+    };
+
+    window.addEventListener('projectChanged', handleProjectChanged);
+    return () => window.removeEventListener('projectChanged', handleProjectChanged);
+  }, [user]);
+
+  // Fetch current project and chat history
+  useEffect(() => {
+    if (user) {
+      fetchCurrentProject();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (currentProject) {
+      fetchChatHistory();
+    }
+  }, [currentProject]);
+
+  const fetchCurrentProject = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('adorable_projects')
+        .select('id, display_name')
+        .eq('user_id', user.id)
+        .eq('is_current', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      setCurrentProject(data);
+    } catch (error) {
+      console.error('Error fetching current project:', error);
+      setCurrentProject(null);
+    }
+  };
+
+  const fetchChatHistory = async () => {
+    if (!currentProject) {
+      setChatHistory([]);
+      onChatHistoryChange(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('adorable_chat_history')
+        .select('id, message, issuer, created_at')
+        .eq('project_id', currentProject.id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      const history = data || [];
+      setChatHistory(history);
+      onChatHistoryChange(history.length > 0);
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+      setChatHistory([]);
+      onChatHistoryChange(false);
+    }
+  };
 
   const handleImageUpload = () => {
     const input = document.createElement("input");
@@ -91,10 +161,11 @@ const ChatSidebar = ({ user, onNewChat, isOpen }: ChatSidebarProps) => {
       // Add to chat history
       const newChat: ChatMessage = {
         id: Date.now().toString(),
-        title: prompt.trim().substring(0, 30) + (prompt.trim().length > 30 ? "..." : ""),
-        timestamp: new Date(),
+        message: prompt.trim(),
+        issuer: 'user',
+        created_at: new Date().toISOString(),
       };
-      setChatHistory(prev => [newChat, ...prev]);
+      setChatHistory(prev => [...prev, newChat]);
       
       toast({
         title: "Success",
@@ -118,41 +189,109 @@ const ChatSidebar = ({ user, onNewChat, isOpen }: ChatSidebarProps) => {
     }
   };
 
-  const handleDeleteChat = (chatId: string) => {
-    setChatHistory(prev => prev.filter(chat => chat.id !== chatId));
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      const { error } = await supabase
+        .from('adorable_chat_history')
+        .delete()
+        .eq('id', chatId);
+
+      if (error) throw error;
+
+      setChatHistory(prev => prev.filter(chat => chat.id !== chatId));
+      
+      // Update chat history status
+      const remainingHistory = chatHistory.filter(chat => chat.id !== chatId);
+      onChatHistoryChange(remainingHistory.length > 0);
+      toast({
+        title: "Message deleted",
+        description: "Chat message has been deleted.",
+      });
+    } catch (error) {
+      console.error('Error deleting chat message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete message.",
+        variant: "destructive",
+      });
+    }
   };
 
-  if (!isOpen || !user) {
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  if (!isOpen || !user || chatHistory.length === 0) {
     return null;
   }
 
   return (
     <Sidebar className="h-[calc(100vh-56px)] w-80 border-chat-input-border bg-chat-input rounded-tr-xl rounded-br-xl absolute left-0 top-0 bottom-0 z-10 shadow-2xl">
       <SidebarContent className="flex-1 overflow-auto bg-chat-input">
-
-        <div className="p-2 space-y-1">
+        <div className="p-4 space-y-4">
           {chatHistory.map((chat) => (
-            <div
-              key={chat.id}
-              className="group flex items-center justify-between p-3 rounded-md hover:bg-icon-hover cursor-pointer"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground truncate">{chat.title}</p>
-                <p className="text-xs text-foreground/70">
-                  {chat.timestamp.toLocaleDateString()}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteChat(chat.id);
-                }}
-                className="opacity-0 group-hover:opacity-100 p-1 h-auto hover:bg-destructive/10"
-              >
-                <Trash2 className="w-3 h-3 text-destructive" />
-              </Button>
+            <div key={chat.id}>
+              {chat.issuer === 'user' ? (
+                // User message in rounded box
+                <div className="group relative">
+                  <div className="bg-gradient-main rounded-2xl border border-chat-input-border p-3">
+                    <p className="text-sm text-foreground break-words">{chat.message}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteChat(chat.id);
+                    }}
+                    className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1 h-auto w-auto rounded-full hover:bg-destructive/10 bg-background border border-border"
+                  >
+                    <Trash2 className="w-3 h-3 text-destructive" />
+                  </Button>
+                </div>
+              ) : (
+                // Adorable response directly on background
+                <div 
+                  className="space-y-2"
+                  onMouseEnter={() => setHoveredMessage(chat.id)}
+                  onMouseLeave={() => setHoveredMessage(null)}
+                >
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src={adorableLogo} 
+                      alt="Adorable" 
+                      className="w-5 h-5 object-contain flex-shrink-0"
+                    />
+                    <span className="text-sm font-medium text-foreground">Adorable</span>
+                    {hoveredMessage === chat.id && (
+                      <span className="text-xs text-foreground/70 ml-auto">
+                        {formatTimestamp(chat.created_at)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="ml-7 group relative">
+                    <p className="text-sm text-foreground break-words">{chat.message}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteChat(chat.id);
+                      }}
+                      className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1 h-auto w-auto rounded-full hover:bg-destructive/10 bg-background border border-border"
+                    >
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

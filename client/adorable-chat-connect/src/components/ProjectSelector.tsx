@@ -33,6 +33,18 @@ const ProjectSelector = ({ user }: ProjectSelectorProps) => {
     }
   }, [user]);
 
+  useEffect(() => {
+    // Listen for new project creation events
+    const handleProjectCreated = () => {
+      if (user) {
+        fetchProjects();
+      }
+    };
+
+    window.addEventListener('projectCreated', handleProjectCreated);
+    return () => window.removeEventListener('projectCreated', handleProjectCreated);
+  }, [user]);
+
   const fetchProjects = async () => {
     if (!user) return;
 
@@ -106,6 +118,9 @@ const ProjectSelector = ({ user }: ProjectSelectorProps) => {
       if (error) throw error;
 
       await fetchProjects();
+
+      // Trigger project change event
+      window.dispatchEvent(new CustomEvent('projectChanged'));
 
       toast({
         title: "Project selected",

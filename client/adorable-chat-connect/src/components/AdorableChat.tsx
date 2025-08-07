@@ -25,6 +25,7 @@ const AdorableChat = () => {
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [hasChatHistory, setHasChatHistory] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -112,11 +113,17 @@ const AdorableChat = () => {
 
       const data = await apiClient.promptFirst({ prompt });
 
-      const message = `First prompt processed successfully. New project created. ${data.projectId} ${data.projectName} ${data.userId}`
-      console.log(message);
+      // Trigger a custom event to notify other components about the new project
+      window.dispatchEvent(new CustomEvent('projectCreated', { 
+        detail: { 
+          projectId: data.projectId, 
+          projectName: data.projectName 
+        } 
+      }));
+
       toast({
         title: "Success",
-        description: message,
+        description: `Project "${data.projectName}" created successfully!`,
       });
       setPrompt("");
     } catch (error) {
@@ -141,11 +148,19 @@ const AdorableChat = () => {
     // Additional logic for starting a new chat can be added here
   };
 
+  const handleChatHistoryChange = (hasHistory: boolean) => {
+    setHasChatHistory(hasHistory);
+    // Close sidebar if no chat history
+    if (!hasHistory) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="h-screen bg-gradient-main w-full flex flex-col overflow-hidden">
         <Header>
-          {user && (
+          {user && hasChatHistory && (
             <Button
               variant="ghost"
               size="sm"
@@ -162,124 +177,139 @@ const AdorableChat = () => {
         </Header>
         
         <div className="flex relative" style={{ height: 'calc(100vh - 3.5rem)' }}>
-          <ChatSidebar user={user} onNewChat={handleNewChat} isOpen={sidebarOpen} />
+          <ChatSidebar 
+            user={user} 
+            onNewChat={handleNewChat} 
+            isOpen={sidebarOpen} 
+            onChatHistoryChange={handleChatHistoryChange}
+          />
           
-          <div className="flex-1 flex items-center justify-center p-4">
-              <div className="w-full max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-16">
-                  <div className="flex items-center justify-center gap-4 mb-6">
-                    <h1 className="text-5xl md:text-6xl font-bold text-foreground">
-                      Build something
-                    </h1>
-                    <img 
-                      src={adorableLogo} 
-                      alt="Adorable" 
-                      className="h-16 md:h-20 object-contain"
-                    />
-                    <h1 className="text-5xl md:text-6xl font-bold text-foreground">
-                      Adorable
-                    </h1>
-                  </div>
-                  <p className="text-xl text-muted-foreground">
-                    Create apps and websites by chatting with AI
-                  </p>
-                </div>
-
-                {/* Chat Interface */}
-                <div className="bg-chat-input rounded-3xl border border-chat-input-border p-6 shadow-2xl">
-                  <div className="mb-4">
-                    <Input
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Ask Adorable to create a landing page for my..."
-                      className="bg-transparent border-none text-lg placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto"
-                    />
+          <div className="flex-1">
+            {hasChatHistory ? (
+              <iframe
+                src="http://localhost:3002"
+                className="w-full h-full border-0"
+                title="Dev Server"
+              />
+            ) : (
+              <div className="flex items-center justify-center p-4 h-full">
+                <div className="w-full max-w-4xl mx-auto">
+                  {/* Header */}
+                  <div className="text-center mb-16">
+                    <div className="flex items-center justify-center gap-4 mb-6">
+                      <h1 className="text-5xl md:text-6xl font-bold text-foreground">
+                        Build something
+                      </h1>
+                      <img 
+                        src={adorableLogo} 
+                        alt="Adorable" 
+                        className="h-16 md:h-20 object-contain"
+                      />
+                      <h1 className="text-5xl md:text-6xl font-bold text-foreground">
+                        Adorable
+                      </h1>
+                    </div>
+                    <p className="text-xl text-muted-foreground">
+                      Create apps and websites by chatting with AI
+                    </p>
                   </div>
 
-                  {/* Toolbar */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      {/* Upload Image Button */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleImageUpload}
-                        className="p-2 h-auto rounded-full hover:bg-icon-hover transition-colors"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </Button>
-
-                      {/* Services (MCP Servers) - Only show when logged in */}
-                      {user && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={handleGetMcpServers}
-                              className="flex items-center gap-2 px-3 py-2 h-auto rounded-full hover:bg-icon-hover transition-colors"
-                            >
-                              <Users className="w-4 h-4" />
-                              <span className="text-sm">Services</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="bg-card border-border">
-                            {mcpServers.length > 0 ? (
-                              mcpServers.map((server, index) => (
-                                <DropdownMenuItem key={index}>
-                                  {server}
-                                </DropdownMenuItem>
-                              ))
-                            ) : (
-                              <DropdownMenuItem disabled>
-                                No servers available
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-
-                      {/* Supabase - Only show when logged in */}
-                      {user && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={handleSupabaseAction}
-                              className="flex items-center gap-2 px-3 py-2 h-auto rounded-full hover:bg-icon-hover transition-colors"
-                            >
-                              <div className="w-4 h-4 bg-primary rounded flex items-center justify-center">
-                                <span className="text-xs font-bold text-primary-foreground">S</span>
-                              </div>
-                              <span className="text-sm">Supabase</span>
-                              <ChevronDown className="w-3 h-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="bg-card border-border">
-                            <DropdownMenuItem>Connect Database</DropdownMenuItem>
-                            <DropdownMenuItem>Manage Tables</DropdownMenuItem>
-                            <DropdownMenuItem>Authentication</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
+                  {/* Chat Interface */}
+                  <div className="bg-chat-input rounded-3xl border border-chat-input-border p-6 shadow-2xl">
+                    <div className="mb-4">
+                      <Input
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Ask Adorable to create a landing page for my..."
+                        className="bg-transparent border-none text-lg placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto"
+                      />
                     </div>
 
-                    {/* Submit Button */}
-                    <Button
-                      onClick={handlePromptSubmit}
-                      disabled={!prompt.trim()}
-                      className="p-2 h-auto rounded-full bg-foreground hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ArrowUp className="w-5 h-5 text-background" />
-                    </Button>
+                    {/* Toolbar */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {/* Upload Image Button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleImageUpload}
+                          className="p-2 h-auto rounded-full hover:bg-icon-hover transition-colors"
+                        >
+                          <Plus className="w-5 h-5" />
+                        </Button>
+
+                        {/* Services (MCP Servers) - Only show when logged in */}
+                        {user && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleGetMcpServers}
+                                className="flex items-center gap-2 px-3 py-2 h-auto rounded-full hover:bg-icon-hover transition-colors"
+                              >
+                                <Users className="w-4 h-4" />
+                                <span className="text-sm">Services</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="bg-card border-border">
+                              {mcpServers.length > 0 ? (
+                                mcpServers.map((server, index) => (
+                                  <DropdownMenuItem key={index}>
+                                    {server}
+                                  </DropdownMenuItem>
+                                ))
+                              ) : (
+                                <DropdownMenuItem disabled>
+                                  No servers available
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+
+                        {/* Supabase - Only show when logged in */}
+                        {user && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleSupabaseAction}
+                                className="flex items-center gap-2 px-3 py-2 h-auto rounded-full hover:bg-icon-hover transition-colors"
+                              >
+                                <div className="w-4 h-4 bg-primary rounded flex items-center justify-center">
+                                  <span className="text-xs font-bold text-primary-foreground">S</span>
+                                </div>
+                                <span className="text-sm">Supabase</span>
+                                <ChevronDown className="w-3 h-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="bg-card border-border">
+                              <DropdownMenuItem>Connect Database</DropdownMenuItem>
+                              <DropdownMenuItem>Manage Tables</DropdownMenuItem>
+                              <DropdownMenuItem>Authentication</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+
+                      {/* Submit Button */}
+                      <Button
+                        onClick={handlePromptSubmit}
+                        disabled={!prompt.trim()}
+                        className="p-2 h-auto rounded-full bg-foreground hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ArrowUp className="w-5 h-5 text-background" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
       </div>
 
       {/* Authentication Modal */}
