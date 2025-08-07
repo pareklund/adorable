@@ -46,6 +46,17 @@ const AdorableChat = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const resetHandler = () => {
+      setHasChatHistory(false);
+      setIsProcessing(false);
+      setSidebarOpen(false);
+      setPrompt("");
+    };
+    window.addEventListener('resetToInitialPrompt', resetHandler);
+    return () => window.removeEventListener('resetToInitialPrompt', resetHandler);
+  }, []);
+
   const handleImageUpload = () => {
     const input = document.createElement("input");
     input.type = "file";

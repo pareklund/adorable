@@ -8,7 +8,7 @@ import { ChevronDown, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { apiClient } from "@/lib/api-client";
+import {apiClient, SwitchProjectResponseType} from "@/lib/api-client";
 
 interface Project {
   id: string;
@@ -101,17 +101,9 @@ const ProjectSelector = ({ user }: ProjectSelectorProps) => {
   };
 
   const handleSelectProject = async (projectId: string) => {
-    if (!user || !currentProject) return;
-
     try {
       // Call the switchWorkspace API
-      await apiClient.switchWorkspace(
-        {
-          projectIdToSwitchTo: projectId,
-          currentProjectId: currentProject.id
-        },
-        currentProject.id
-      );
+      await apiClient.switchWorkspace({ projectId: projectId });
 
       // First, set all projects to not current
       await supabase
@@ -146,6 +138,36 @@ const ProjectSelector = ({ user }: ProjectSelectorProps) => {
     }
   };
 
+  const handleCreateProject = async () => {
+    try {
+      if (user) {
+        // Unset current project for this user
+        await supabase
+          .from('adorable_projects')
+          .update({ is_current: false })
+          .eq('user_id', user.id);
+
+        await fetchProjects();
+        setCurrentProject(null);
+      }
+
+      // Notify app to show initial prompt page again
+      window.dispatchEvent(new CustomEvent('resetToInitialPrompt'));
+
+      toast({
+        title: "New project",
+        description: "Start by entering a prompt.",
+      });
+    } catch (error) {
+      console.error('Error creating new project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start a new project. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const openRenameModal = () => {
     if (currentProject) {
       setNewProjectName(currentProject.display_name);
@@ -173,6 +195,10 @@ const ProjectSelector = ({ user }: ProjectSelectorProps) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="start">
+          <DropdownMenuItem onClick={handleCreateProject} className="cursor-pointer">
+            <Edit className="w-4 h-4 mr-2" />
+            Create project
+          </DropdownMenuItem>
           {currentProject && (
             <>
               <DropdownMenuItem onClick={openRenameModal} className="cursor-pointer">
