@@ -13,9 +13,18 @@ export interface PromptResponse {
 }
 
 export interface SwitchWorkspaceRequest {
-  projectIdToSwitchTo: string;
-  currentProjectId: string;
+  projectId: string;
 }
+
+export interface SwitchWorkspaceResponse {
+    projectId: string;
+}
+
+export interface Error {
+    error: string;
+}
+
+export type SwitchProjectResponseType = SwitchWorkspaceResponse | Error;
 
 class ApiClient {
   private client: AxiosInstance;
@@ -65,27 +74,22 @@ class ApiClient {
     return response.data;
   }
 
-  async switchWorkspace(data: SwitchWorkspaceRequest, currentProjectId: string): Promise<void> {
+  async switchWorkspace(data: SwitchWorkspaceRequest): Promise<SwitchProjectResponseType> {
     const session: Session = await getSession();
 
-    const response: AxiosResponse<PromptResponse> = await this.client.post(
+    const response: AxiosResponse<SwitchProjectResponseType> = await this.client.post(
         '/api/v1/project/switchWorkspace',
         data,
         {
-          timeout: 5000,
+          timeout: 30000,
           headers: {
             'X-Adorable-UserId': session.user.id,
-            'X-Adorable-ProjectId': currentProjectId,
             'X-Adorable-AccessToken': session.access_token,
             'X-Adorable-RefreshToken': session.refresh_token
           }
         }
     );
-  }
-
-
-  updateBaseURL(baseURL: string): void {
-    this.client.defaults.baseURL = baseURL;
+    return response.data;
   }
 }
 
