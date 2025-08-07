@@ -2,56 +2,34 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { ApiResponse } from '../types';
 import asyncHandler from "express-async-handler";
-import {v4 as uuidv4} from 'uuid';
 import { supabase } from "../integrations/supabase/client";
 import {getProjectsByUserId} from "../integrations/supabase/project";
 import {Project} from "../integrations/supabase/project";
 import {unsetCurrentProjectForUser} from "../integrations/supabase/project";
 import {createNewCurrentProjectForUser} from "../integrations/supabase/project";
+import {addToChatHistory} from "../integrations/supabase/chatHistory";
+import {ChatIssuer} from "../integrations/supabase/chatHistory";
+
+export interface PromptFirstRequest {
+  prompt: string;
+}
+
+export interface PromptFirstResponse {
+  userId: string;
+  projectId: string;
+  projectName: string;
+}
+
+export interface Error {
+  error: string;
+}
+
+export type PromptFirstResponseType = PromptFirstResponse | Error;
 
 const router = Router();
 
-const ExampleSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email format')
-});
-
-router.get('/example', (req: Request, res: Response<ApiResponse>) => {
-  res.json({
-    success: true,
-    data: {
-      message: 'This is an example API endpoint',
-      timestamp: new Date().toISOString()
-    }
-  });
-});
-
-router.post('/example', (req: Request, res: Response<ApiResponse>) => {
-  try {
-    const validatedData = ExampleSchema.parse(req.body);
-    
-    res.status(201).json({
-      success: true,
-      data: {
-        message: 'Data received successfully',
-        received: validatedData
-      }
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({
-        success: false,
-        error: 'Validation Error',
-        message: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
-      });
-    } else {
-      throw error;
-    }
-  }
-});
-
-router.post("/v1/prompt/first", asyncHandler(async (req, res) => {
-  const body = req.body;
+router.post("/v1/prompt/first", asyncHandler(
+    async (req: Request<PromptFirstRequest>, res: Response<PromptFirstResponseType>) => {
 
   const accessToken = req.header("X-Adorable-AccessToken");
   if (!accessToken) {
@@ -78,7 +56,6 @@ router.post("/v1/prompt/first", asyncHandler(async (req, res) => {
   }
 
   const userId = req.header("X-Adorable-UserId");
-
   if (!userId) {
     const errorMessage = "Missing user id";
     console.error(errorMessage);
@@ -102,7 +79,11 @@ router.post("/v1/prompt/first", asyncHandler(async (req, res) => {
   }
   const newProject:Project = await createNewCurrentProjectForUser(userId, accessToken, refreshToken);
 
-    res.send({ "userId": userId, "projectId": newProject.id, "projectName": newProject.display_name });
+  const promptFirstRequest: PromptFirstRequest = req.body;
+
+  await addToChatHistory(newProject.id, promptFirstRequest.prompt, "user" , userId, accessToken, refreshToken);
+
+  res.send({ "userId": userId, "projectId": newProject.id, "projectName": newProject.display_name });
 }));
 
 export default router;
