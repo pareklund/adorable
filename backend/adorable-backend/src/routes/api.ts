@@ -8,11 +8,11 @@ import {createNewCurrentProjectForUser} from "../integrations/supabase/project";
 import {addToChatHistory} from "../integrations/supabase/chatHistory";
 import {CodeGenerationResult, generateCodeWithClaude} from "../integrations/claudeCode/claudeCode";
 
-export interface PromptFirstRequest {
+export interface PromptRequest {
   prompt: string;
 }
 
-export interface PromptFirstResponse {
+export interface PromptResponse {
   userId: string;
   projectId: string;
   projectName: string;
@@ -22,12 +22,12 @@ export interface Error {
   error: string;
 }
 
-export type PromptFirstResponseType = PromptFirstResponse | Error;
+export type PromptFirstResponseType = PromptResponse | Error;
 
 const router = Router();
 
 router.post("/v1/prompt/first", asyncHandler(
-    async (req: Request<PromptFirstRequest>, res: Response<PromptFirstResponseType>) => {
+    async (req: Request<PromptRequest>, res: Response<PromptFirstResponseType>) => {
 
   const accessToken = req.header("X-Adorable-AccessToken");
   if (!accessToken) {
@@ -77,7 +77,7 @@ router.post("/v1/prompt/first", asyncHandler(
   }
   const newProject:Project = await createNewCurrentProjectForUser(userId, accessToken, refreshToken);
 
-  const promptFirstRequest: PromptFirstRequest = req.body;
+  const promptFirstRequest: PromptRequest = req.body;
 
   await addToChatHistory(newProject.id, promptFirstRequest.prompt, "user" , userId, accessToken, refreshToken);
 
@@ -94,5 +94,84 @@ router.post("/v1/prompt/first", asyncHandler(
 
   res.send({ "userId": userId, "projectId": newProject.id, "projectName": newProject.display_name });
 }));
+
+router.post("/v1/prompt", asyncHandler(
+    async (req: Request<PromptRequest>, res: Response<PromptFirstResponseType>) => {
+
+      const accessToken = req.header("X-Adorable-AccessToken");
+      if (!accessToken) {
+        const errorMessage = "Missing access token";
+        console.error(errorMessage);
+        res.status(400).json({ "error": errorMessage });
+        return;
+      }
+
+      const refreshToken = req.header("X-Adorable-RefreshToken");
+      if (!refreshToken) {
+        const errorMessage = "Missing refresh token";
+        console.error(errorMessage);
+        res.status(400).json({ "error": errorMessage });
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getUser(accessToken);
+      if (error) {
+        const errorMessage = error.message;
+        console.error(errorMessage);
+        res.status(403).json({ "error": errorMessage });
+        return;
+      }
+
+      const userId = req.header("X-Adorable-UserId");
+      if (!userId) {
+        const errorMessage = "Missing user id";
+        console.error(errorMessage);
+        res.status(400).json({ "error": errorMessage });
+        return;
+      }
+
+      if (userId != data.user?.id) {
+        const errorMessage = "Claimed / actual user id mismatch";
+        console.error(errorMessage);
+        res.status(400).json({ "error": errorMessage });
+        return;
+      }
+
+      const projectId = req.header("X-Adorable-ProjectId");
+      if (!projectId) {
+        const errorMessage = "Missing project id";
+        console.error(errorMessage);
+        res.status(400).json({ "error": errorMessage });
+        return;
+      }
+
+      const projectIds: Project[] = await getProjectsByUserId(userId, accessToken, refreshToken);
+
+      const currentProject: Project | undefined = projectIds.find(p => p.is_current);
+
+      if (!currentProject || currentProject.id != projectId) {
+        const errorMessage = "No or conflicting current project configuration";
+        console.error(errorMessage);
+        res.status(400).json({ "error": errorMessage });
+        return;
+      }
+
+      const promptFirstRequest: PromptRequest = req.body;
+
+      await addToChatHistory(currentProject?.id, promptFirstRequest.prompt, "user", userId, accessToken, refreshToken);
+
+      const result: CodeGenerationResult = await generateCodeWithClaude(promptFirstRequest.prompt);
+
+      if (result.error) {
+        res.status(500).json({ "error": result.error})
+        return;
+      }
+
+      result.messages.forEach((message) => {
+        addToChatHistory(currentProject.id, JSON.stringify(message), "adorable", userId, accessToken, refreshToken );
+      })
+
+      res.send({ "userId": userId, "projectId": currentProject.id, "projectName": currentProject.display_name });
+    }));
 
 export default router;
