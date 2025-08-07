@@ -6,7 +6,7 @@ export interface CodeGenerationResult {
     error?: string;
 }
 
-export async function generateCodeWithClaude(prompt: string): Promise<CodeGenerationResult> {
+export async function generateCodeWithClaude(prompt: string, projectId: string): Promise<CodeGenerationResult> {
     try {
         const messages: SDKMessage[] = [];
 
@@ -14,7 +14,7 @@ export async function generateCodeWithClaude(prompt: string): Promise<CodeGenera
         for await (const message of query({
             prompt: prompt,
             options: {
-                cwd: "/workspace",
+                cwd: "/workspaces/" + projectId,
                 maxTurns: 100, // Allow multiple turns for complex builds
                 // Grant all necessary permissions for code generation
                 allowedTools: [
