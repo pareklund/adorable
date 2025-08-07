@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from '@supabase/supabase-js';
 import adorableLogo from "@/assets/adorable-logo.png";
+import { apiClient } from "@/lib/api-client";
 import {
   Sidebar,
   SidebarContent,
@@ -138,34 +139,20 @@ const ChatSidebar = ({ user, onNewChat, isOpen, onChatHistoryChange }: ChatSideb
       });
       return;
     }
+
+    if (!currentProject?.id) {
+      toast({
+        title: "No Project",
+        description: "No current project found",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       console.log("Calling prompt with:", prompt);
       
-      const { data, error } = await supabase.functions.invoke('prompt', {
-        body: { prompt: prompt.trim() }
-      });
-
-      if (error) {
-        console.error("Error calling prompt function:", error);
-        toast({
-          title: "Processing Error",
-          description: "Failed to process prompt",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("Response from AI:", data.response);
-      
-      // Add to chat history
-      const newChat: ChatMessage = {
-        id: Date.now().toString(),
-        message: prompt.trim(),
-        issuer: 'user',
-        created_at: new Date().toISOString(),
-      };
-      setChatHistory(prev => [...prev, newChat]);
+      const data = await apiClient.prompt({ prompt: prompt.trim() }, currentProject.id);
       
       toast({
         title: "Success",

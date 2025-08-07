@@ -2,11 +2,11 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import {getSession} from "@/lib/utils/session.ts";
 import {Session} from "@supabase/supabase-js";
 
-export interface PromptFirstRequest {
+export interface PromptRequest {
   prompt: string;
 }
 
-export interface PromptFirstResponse {
+export interface PromptResponse {
   userId: string;
   projectId: string;
   projectName: string;
@@ -25,9 +25,9 @@ class ApiClient {
     });
   }
 
-  async promptFirst(data: PromptFirstRequest): Promise<PromptFirstResponse> {
+  async promptFirst(data: PromptRequest): Promise<PromptResponse> {
     const session: Session = await getSession();
-    const response: AxiosResponse<PromptFirstResponse> = await this.client.post(
+    const response: AxiosResponse<PromptResponse> = await this.client.post(
       '/api/v1/prompt/first',
       data,
         {
@@ -37,6 +37,23 @@ class ApiClient {
             'X-Adorable-RefreshToken': session.refresh_token
           }
         }
+    );
+    return response.data;
+  }
+
+  async prompt(data: PromptRequest, projectId: string): Promise<PromptResponse> {
+    const session: Session = await getSession();
+    const headers: Record<string, string> = {
+      'X-Adorable-UserId': session.user.id,
+      'X-Adorable-ProjectId': projectId,
+      'X-Adorable-AccessToken': session.access_token,
+      'X-Adorable-RefreshToken': session.refresh_token,
+    };
+
+    const response: AxiosResponse<PromptResponse> = await this.client.post(
+        '/api/v1/prompt',
+        data,
+        { headers }
     );
     return response.data;
   }
