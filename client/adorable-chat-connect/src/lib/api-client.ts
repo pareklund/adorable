@@ -33,7 +33,8 @@ class ApiClient {
         {
           headers: {
             'X-Adorable-UserId': session.user.id,
-            'X-Adorable-AccessToken': session.access_token
+            'X-Adorable-AccessToken': session.access_token,
+            'X-Adorable-RefreshToken': session.refresh_token
           }
         }
     );
