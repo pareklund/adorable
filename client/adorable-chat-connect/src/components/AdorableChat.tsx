@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import adorableLogo from "@/assets/adorable-logo.png";
 import Header from "./Header";
 import ChatSidebar from "./ChatSidebar";
+import {apiClient} from "@/lib/api-client.ts";
 
 const AdorableChat = () => {
   const [prompt, setPrompt] = useState("");
@@ -108,25 +109,14 @@ const AdorableChat = () => {
     
     try {
       console.log("Calling prompt with:", prompt);
-      
-      const { data, error } = await supabase.functions.invoke('prompt', {
-        body: { prompt: prompt.trim() }
-      });
 
-      if (error) {
-        console.error("Error calling prompt function:", error);
-        toast({
-          title: "Processing Error",
-          description: "Failed to process prompt",
-          variant: "destructive",
-        });
-        return;
-      }
+      const data = await apiClient.promptFirst({ prompt });
 
-      console.log("Response from AI:", data.response);
+      const message = `First prompt processed successfully. New project created. ${data.projectId} ${data.projectName} ${data.userId}`
+      console.log(message);
       toast({
         title: "Success",
-        description: "Prompt processed successfully!",
+        description: message,
       });
       setPrompt("");
     } catch (error) {
@@ -155,18 +145,20 @@ const AdorableChat = () => {
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="h-screen bg-gradient-main w-full flex flex-col overflow-hidden">
         <Header>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 h-auto rounded-md hover:bg-icon-hover transition-colors"
-          >
-            {sidebarOpen ? (
-              <PanelLeftClose className="w-5 h-5" />
-            ) : (
-              <PanelLeft className="w-5 h-5" />
-            )}
-          </Button>
+          {user && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 h-auto rounded-md hover:bg-icon-hover transition-colors"
+            >
+              {sidebarOpen ? (
+                <PanelLeftClose className="w-5 h-5" />
+              ) : (
+                <PanelLeft className="w-5 h-5" />
+              )}
+            </Button>
+          )}
         </Header>
         
         <div className="flex relative" style={{ height: 'calc(100vh - 3.5rem)' }}>

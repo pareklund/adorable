@@ -122,7 +122,7 @@ const ChatSidebar = ({ user, onNewChat, isOpen }: ChatSidebarProps) => {
     setChatHistory(prev => prev.filter(chat => chat.id !== chatId));
   };
 
-  if (!isOpen) {
+  if (!isOpen || !user) {
     return null;
   }
 
