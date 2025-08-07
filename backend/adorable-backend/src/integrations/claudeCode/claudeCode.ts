@@ -15,7 +15,7 @@ export async function generateCodeWithClaude(prompt: string): Promise<CodeGenera
             prompt: prompt,
             options: {
                 cwd: "/workspace",
-                maxTurns: 10, // Allow multiple turns for complex builds
+                maxTurns: 100, // Allow multiple turns for complex builds
                 // Grant all necessary permissions for code generation
                 allowedTools: [
                     "Read",
