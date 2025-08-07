@@ -13,7 +13,7 @@ docker compose build
 docker compose up
 ```
 
-Make sure you have an .env file in the backend/adorable-backend folder, containing at least the following
+NOTE: Make sure you have an .env file in the backend/adorable-backend folder, containing at least the following
 environment variable:
 
 ```
@@ -22,6 +22,8 @@ NODE_ENV=development
 CORS_ORIGIN=http://localhost:3000
 ANTHROPIC_API_KEY=<your-key>
 ```
+
+Access the Adorable UI at http://localhost:3000.
 
 ## Components 
 
@@ -98,6 +100,13 @@ fundamental sync mechanism.
 ### Deployment of Created Apps
 
 No deployment of created apps is (yet) implemented, which is arguably a very important feature.
+
+### UI Responsiveness
+
+Unlike Lovable, long-running operations like prompts and workspace operations don't send back any information until 
+the operations are fully completed. Therefore, it might appear (especially for prompts) that the application has hung. 
+To alleviate your fears, turn to the console running `docker compose up` and you most likely see that the application
+(Claude) is hard at work.
 
 ### TODO
 
