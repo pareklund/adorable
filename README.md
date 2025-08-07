@@ -45,7 +45,24 @@ A shared disk volume is used to allow for the backend server to more easily mana
 
 ## Considerations and Limitations
 
+## Screenshots
 
+Below are some screenshots from running the app.
 
+### Multiple Apps 
 
+Multiple apps created and managed in parallel (+ sidebar with project-/app-specific chat history)
+
+![TODO app created](doc/images/todo-app-created.png)
+
+![Calendar app created](doc/images/calendar-app-created.png)
+
+![Inspirational app created](doc/images/inspirational-app-created.png)
+
+Improve an app (consecutive prompts)
+
+![Improve app](doc/images/improve-app.png)
+
+Rename a project 
+![Rename project](doc/images/rename-project.png)
 
