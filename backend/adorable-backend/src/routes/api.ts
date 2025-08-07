@@ -1,6 +1,4 @@
 import { Router, Request, Response } from 'express';
-import { z } from 'zod';
-import { ApiResponse } from '../types';
 import asyncHandler from "express-async-handler";
 import { supabase } from "../integrations/supabase/client";
 import {getProjectsByUserId} from "../integrations/supabase/project";
@@ -8,7 +6,7 @@ import {Project} from "../integrations/supabase/project";
 import {unsetCurrentProjectForUser} from "../integrations/supabase/project";
 import {createNewCurrentProjectForUser} from "../integrations/supabase/project";
 import {addToChatHistory} from "../integrations/supabase/chatHistory";
-import {ChatIssuer} from "../integrations/supabase/chatHistory";
+import {CodeGenerationResult, generateCodeWithClaude} from "../integrations/claudeCode/claudeCode";
 
 export interface PromptFirstRequest {
   prompt: string;
@@ -82,6 +80,17 @@ router.post("/v1/prompt/first", asyncHandler(
   const promptFirstRequest: PromptFirstRequest = req.body;
 
   await addToChatHistory(newProject.id, promptFirstRequest.prompt, "user" , userId, accessToken, refreshToken);
+
+  const result: CodeGenerationResult = await generateCodeWithClaude(promptFirstRequest.prompt);
+
+  if (result.error) {
+    res.status(500).json({ "error": result.error})
+    return;
+  }
+
+  result.messages.forEach((message) => {
+    addToChatHistory(newProject.id, JSON.stringify(message), "adorable", userId, accessToken, refreshToken );
+  })
 
   res.send({ "userId": userId, "projectId": newProject.id, "projectName": newProject.display_name });
 }));

@@ -11,6 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.70",
     "@octokit/auth-token": "^6.0.0",
     "@octokit/rest": "^22.0.0",
     "@supabase/supabase-js": "^2.53.0",
