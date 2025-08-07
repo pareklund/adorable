@@ -18,7 +18,6 @@ class ApiClient {
   constructor(baseURL: string) {
     this.client = axios.create({
       baseURL,
-      timeout: 60000, // 1 minute timeout
       headers: {
         'Content-Type': 'application/json',
       },
@@ -31,6 +30,7 @@ class ApiClient {
       '/api/v1/prompt/first',
       data,
         {
+          timeout: 180000,
           headers: {
             'X-Adorable-UserId': session.user.id,
             'X-Adorable-AccessToken': session.access_token,
@@ -43,17 +43,19 @@ class ApiClient {
 
   async prompt(data: PromptRequest, projectId: string): Promise<PromptResponse> {
     const session: Session = await getSession();
-    const headers: Record<string, string> = {
-      'X-Adorable-UserId': session.user.id,
-      'X-Adorable-ProjectId': projectId,
-      'X-Adorable-AccessToken': session.access_token,
-      'X-Adorable-RefreshToken': session.refresh_token,
-    };
 
     const response: AxiosResponse<PromptResponse> = await this.client.post(
         '/api/v1/prompt',
         data,
-        { headers }
+        {
+          timeout: 180000,
+          headers: {
+            'X-Adorable-UserId': session.user.id,
+            'X-Adorable-ProjectId': projectId,
+            'X-Adorable-AccessToken': session.access_token,
+            'X-Adorable-RefreshToken': session.refresh_token
+          }
+        }
     );
     return response.data;
   }
