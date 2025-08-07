@@ -4,11 +4,32 @@
 
 Adorable is a Lovable clone written mainly in TypeScript.
 
+## How to Run
+
+Just issue:
+
+```
+docker compose build
+docker compose up
+```
+
+Make sure you have an .env file in the backend/adorable-backend folder, containing at least the following
+environment variable:
+
+```
+PORT=8080
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:3000
+ANTHROPIC_API_KEY=<your-key>
+```
+
 ## Components 
 
 It consists of the following components:
 
 ### The UI
+
+**Project location:** client/adorable-chat-connect
 
 Created largely in Lovable and providing the following features:
 
@@ -18,6 +39,8 @@ Created largely in Lovable and providing the following features:
 * Per-project chat history - Displayed in togglable left sidebar and persisted in Supabase
 
 ### The Backend Server (API Server)
+
+**Project location:** backend/adorable-backend
 
 Handles/executes prompts and manages project workspaces.
 
@@ -29,7 +52,8 @@ Generated code is thereby persisted on disk in directories named by the respecti
 
 ### The Dev Server
 
-Running the current project code (from the current workspace directory) as managed by the backend server.
+No code/project of its own, just running the current project code (from the current workspace directory) as managed by the 
+backend server.
 
 ### Supabase
 
