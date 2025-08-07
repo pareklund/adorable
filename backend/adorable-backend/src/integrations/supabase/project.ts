@@ -4,7 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 export type Project = Tables<'adorable_projects'>;
 
-export async function getProjectsByUserId(userId: string): Promise<Project[]> {
+export async function getProjectsByUserId(userId: string, accessToken: string, refreshToken: string): Promise<Project[]> {
+    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    
     const { data, error } = await supabase
         .from('adorable_projects')
         .select('*')
@@ -19,7 +21,9 @@ export async function getProjectsByUserId(userId: string): Promise<Project[]> {
 }
 
 
-export async function unsetCurrentProjectForUser(userId: string, projectId: string): Promise<void> {
+export async function unsetCurrentProjectForUser(userId: string, projectId: string, accessToken: string, refreshToken: string): Promise<void> {
+    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    
     const { error } = await supabase
         .from('adorable_projects')
         .update({ is_current: false })
@@ -31,7 +35,9 @@ export async function unsetCurrentProjectForUser(userId: string, projectId: stri
     }
 }
 
-export async function createNewCurrentProjectForUser(userId: string): Promise<Project> {
+export async function createNewCurrentProjectForUser(userId: string, accessToken: string, refreshToken: string): Promise<Project> {
+    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    
     const projectId = uuidv4();
     const now = new Date().toISOString();
 

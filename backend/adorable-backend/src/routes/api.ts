@@ -61,6 +61,14 @@ router.post("/v1/prompt/first", asyncHandler(async (req, res) => {
     return;
   }
 
+  const refreshToken = req.header("X-Adorable-RefreshToken");
+  if (!refreshToken) {
+    const errorMessage = "Missing refresh token";
+    console.error(errorMessage);
+    res.status(400).json({ "error": errorMessage });
+    return;
+  }
+
   const { data, error } = await supabase.auth.getUser(accessToken);
   if (error) {
     const errorMessage = error.message;
@@ -85,14 +93,14 @@ router.post("/v1/prompt/first", asyncHandler(async (req, res) => {
     return;
   }
 
-  const projectIds: Project[] = await getProjectsByUserId(userId);
+  const projectIds: Project[] = await getProjectsByUserId(userId, accessToken, refreshToken);
 
   if (projectIds.length > 0) {
     projectIds
         .filter(p => p.is_current)
-        .forEach(p => unsetCurrentProjectForUser(userId, p.id));
+        .forEach(p => unsetCurrentProjectForUser(userId, p.id, accessToken, refreshToken));
   }
-  const newProject:Project = await createNewCurrentProjectForUser(userId);
+  const newProject:Project = await createNewCurrentProjectForUser(userId, accessToken, refreshToken);
 
     res.send({ "userId": userId, "projectId": newProject.id, "projectName": newProject.display_name });
 }));
