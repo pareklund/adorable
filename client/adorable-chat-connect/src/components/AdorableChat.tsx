@@ -26,6 +26,7 @@ const AdorableChat = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasChatHistory, setHasChatHistory] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -108,6 +109,9 @@ const AdorableChat = () => {
       return;
     }
     
+    setIsProcessing(true);
+    setHasChatHistory(true);
+    
     try {
       console.log("Calling prompt with:", prompt);
 
@@ -133,6 +137,9 @@ const AdorableChat = () => {
         description: "Failed to process prompt",
         variant: "destructive",
       });
+      setHasChatHistory(false);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -186,11 +193,35 @@ const AdorableChat = () => {
           
           <div className="flex-1">
             {hasChatHistory ? (
-              <iframe
-                src="http://localhost:3002"
-                className="w-full h-full border-0"
-                title="Dev Server"
-              />
+              isProcessing ? (
+                <div className="flex items-center justify-center h-full bg-background">
+                  <div className="flex flex-col items-center gap-6">
+                    <div className="w-24 h-24 opacity-50">
+                      <img 
+                        src={adorableLogo} 
+                        alt="Adorable" 
+                        className="w-full h-full object-contain filter grayscale"
+                      />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-lg font-medium text-foreground animate-pulse">
+                        Spinning up preview...
+                      </h3>
+                      <div className="flex items-center gap-1 mt-2">
+                        <div className="w-1 h-1 bg-foreground rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                        <div className="w-1 h-1 bg-foreground rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                        <div className="w-1 h-1 bg-foreground rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <iframe
+                  src="http://localhost:3002"
+                  className="w-full h-full border-0"
+                  title="Dev Server"
+                />
+              )
             ) : (
               <div className="flex items-center justify-center p-4 h-full">
                 <div className="w-full max-w-4xl mx-auto">
