@@ -4,6 +4,10 @@ import { ApiResponse } from '../types';
 import asyncHandler from "express-async-handler";
 import {v4 as uuidv4} from 'uuid';
 import { supabase } from "../integrations/supabase/client";
+import {getProjectsByUserId} from "../integrations/supabase/project";
+import {Project} from "../integrations/supabase/project";
+import {unsetCurrentProjectForUser} from "../integrations/supabase/project";
+import {createNewCurrentProjectForUser} from "../integrations/supabase/project";
 
 const router = Router();
 
@@ -47,7 +51,6 @@ router.post('/example', (req: Request, res: Response<ApiResponse>) => {
 });
 
 router.post("/v1/prompt/first", asyncHandler(async (req, res) => {
-  // TODO: Check if dev-server is already created. If so, return with error.
   const body = req.body;
 
   const accessToken = req.header("X-Adorable-AccessToken");
@@ -82,10 +85,16 @@ router.post("/v1/prompt/first", asyncHandler(async (req, res) => {
     return;
   }
 
-  const projectId = uuidv4();
+  const projectIds: Project[] = await getProjectsByUserId(userId);
 
-  // For now, just ignore the prompt and
-    res.send({ "projectId": projectId, "userId": userId, "accessToken": accessToken });
+  if (projectIds.length > 0) {
+    projectIds
+        .filter(p => p.is_current)
+        .forEach(p => unsetCurrentProjectForUser(userId, p.id));
+  }
+  const newProject:Project = await createNewCurrentProjectForUser(userId);
+
+    res.send({ "userId": userId, "projectId": newProject.id, "projectName": newProject.display_name });
 }));
 
 export default router;

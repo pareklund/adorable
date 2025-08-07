@@ -7,28 +7,57 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
-  }
-  public: {
-    Tables: {
-      [_ in never]: never
+    // Allows to automatically instanciate createClient with right options
+    // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+    __InternalSupabase: {
+        PostgrestVersion: "13.0.4"
     }
-    Views: {
-      [_ in never]: never
+    public: {
+        Tables: {
+            adorable_projects: {
+                Row: {
+                    created_at: string
+                    display_name: string
+                    id: string
+                    is_current: boolean
+                    last_updated: string
+                    supabase_project_id: string
+                    user_id: string
+                }
+                Insert: {
+                    created_at?: string
+                    display_name: string
+                    id?: string
+                    is_current?: boolean
+                    last_updated?: string
+                    supabase_project_id: string
+                    user_id: string
+                }
+                Update: {
+                    created_at?: string
+                    display_name?: string
+                    id?: string
+                    is_current?: boolean
+                    last_updated?: string
+                    supabase_project_id?: string
+                    user_id?: string
+                }
+                Relationships: []
+            }
+        }
+        Views: {
+            [_ in never]: never
+        }
+        Functions: {
+            [_ in never]: never
+        }
+        Enums: {
+            [_ in never]: never
+        }
+        CompositeTypes: {
+            [_ in never]: never
+        }
     }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
