@@ -4,8 +4,10 @@ RUN apk add --no-cache git curl
 
 COPY backend/adorable-backend/ app/
 
-COPY scaffolding/common/ workspace/
-COPY scaffolding/ts-react-vite-tailwind/ workspace/
+COPY scaffolding/common/ workspaces/scaffolding
+COPY scaffolding/ts-react-vite-tailwind/ workspaces/scaffolding
+
+RUN ln -s /workspaces/scaffolding /workspaces/current
 
 WORKDIR /app
 

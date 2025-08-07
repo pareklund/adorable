@@ -11,8 +11,8 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     volumes:
-      - ./workspace:/workspace-mount
-    command: sh -c "cp -r /workspace/* /workspace-mount/ 2>/dev/null || true"
+      - ./workspaces:/workspaces-mount
+    command: sh -c "cp -r /workspaces/* /workspaces-mount/ 2>/dev/null || true"
     restart: "no"
   backend:
     build: 
@@ -21,7 +21,7 @@ services:
     ports:
       - "3001:8080"
     volumes: 
-      - ./workspace:/workspace
+      - ./workspaces:/workspaces
     depends_on:
       workspace-init:
         condition: service_completed_successfully
@@ -32,7 +32,7 @@ services:
     ports:
       - "3002:8080"      
     volumes: 
-      - ./workspace:/app
+      - ./workspaces:/workspaces
     depends_on:
       workspace-init:
         condition: service_completed_successfully            
