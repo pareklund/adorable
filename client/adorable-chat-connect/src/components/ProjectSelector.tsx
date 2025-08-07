@@ -8,6 +8,7 @@ import { ChevronDown, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
+import { apiClient } from "@/lib/api-client";
 
 interface Project {
   id: string;
@@ -100,9 +101,18 @@ const ProjectSelector = ({ user }: ProjectSelectorProps) => {
   };
 
   const handleSelectProject = async (projectId: string) => {
-    if (!user) return;
+    if (!user || !currentProject) return;
 
     try {
+      // Call the switchWorkspace API
+      await apiClient.switchWorkspace(
+        {
+          projectIdToSwitchTo: projectId,
+          currentProjectId: currentProject.id
+        },
+        currentProject.id
+      );
+
       // First, set all projects to not current
       await supabase
         .from('adorable_projects')

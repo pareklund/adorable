@@ -5,7 +5,8 @@ RUN apk add --no-cache git curl
 COPY scaffolding/common/ workspaces/scaffolding
 COPY scaffolding/ts-react-vite-tailwind/ workspaces/scaffolding
 
-RUN ln -s /workspaces/scaffolding /workspaces/current
+COPY scaffolding/common/ workspaces/current
+COPY scaffolding/ts-react-vite-tailwind/ workspaces/current
 
 WORKDIR /workspaces/current
 
@@ -13,10 +14,10 @@ WORKDIR /workspaces/current
 
 EXPOSE 8080
 
-# ADD dev-server/start.sh /
-# RUN chmod +x /start.sh
+ADD dev-server/start.sh /
+RUN chmod +x /start.sh
 
-# CMD ["/start.sh"]
+CMD ["/start.sh"]
 
-CMD ["npm", "run", "dev"]
+# CMD ["npm", "run", "dev"]
 
