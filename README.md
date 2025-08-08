@@ -110,6 +110,12 @@ something functional up so quickly, but a real implementation would probably hav
 * Custom logic and workflows
 * Etc.
 
+**NOTE:** I had the intention of guiding Claude Code using
+[the leaked Lovable system prompt](https://github.com/dontriskit/awesome-ai-system-prompts/tree/main/Loveable), but 
+adjusting it to Claude Code and separating out any framework-specific instructions into their own directories (thus, the 
+currently unused top-level directory `system-prompts` and its sub-directories), so as to optimize for generating using 
+other tools/frameworks as well, but (unsurprisingly) I didn't get that far during the time provided.
+
 ### Docker Compose Setup
 
 The Docker Compose setup uses a shared disk volume to, through the use of rsync in the backend server, enable syncing of 
