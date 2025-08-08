@@ -97,6 +97,11 @@ i.e. to avoid the shared volumes and (in practice) the co-located deployment of 
 integration is probably more for the benefit of users being able to collaborate with AI:s rather than being the 
 fundamental sync mechanism. 
 
+**NOTE:** When adding GitHub integration - connecting the project workspaces to repositories in GitHub - GitHub Webhooks
+would need to be set up, in order to notify the backend-server of any changes and, upon a change, pull the latest 
+changes from the repository and - if it is the current workspace - rsync the changes to the current workspace, to 
+have the changes be reflected automatically in the dev server.
+
 ### Deployment of Created Apps
 
 No deployment of created apps is (yet) implemented, which is arguably a very important feature.
