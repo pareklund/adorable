@@ -96,7 +96,7 @@ the current workspace and be able to see changes in the dev server immediately. 
 host, which is inoptimal and somewhat limits deployment options. 
 
 Also, the shared volume setup makes the Docker build phase a bit more involved - with the need for an init container - 
-and requires the dev-server to perform `npm install` during startup instead of during build time. Granted, this might be
+and requires the dev server to perform `npm install` during startup instead of during build time. Granted, this might be
 avoidable, but given my limited recent work with Docker recently and the limited time allotted for the exercise, I 
 settled for the current solution.
 
