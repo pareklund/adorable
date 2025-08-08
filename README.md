@@ -89,16 +89,26 @@ something functional up so quickly, but a real implementation would probably hav
 * Custom logic and workflows
 * Etc.
 
+### Docker Compose Setup
+
+The Docker Compose setup uses a shared disk volume to, through the use of rsync in the backend server, enable syncing of 
+the current workspace and be able to see changes in the dev server immediately. This couples the containers to the same 
+host, which is inoptimal and somewhat limits deployment options. 
+
+Also, the shared volume setup makes the Docker build phase a bit more involved - with the need for an init container - 
+and requires the dev-server to perform `npm install` during startup instead of during build time. Granted, this might be
+avoidable, but given my limited recent work with Docker recently and the limited time allotted for the exercise, I 
+settled for the current solution.
+
 ### Missing GitHub Integration
 
 It would be desirable to have, like in Lovable, the user connect their apps to GitHub and be able to push the generated 
 code changes there. It could possibly also have been a way to achieve more autonomy between backend- and dev servers - 
-i.e. to avoid the shared volumes and (in practice) the co-located deployment of the servers. That said, GitHub
-integration is probably more for the benefit of users being able to collaborate with AI:s rather than being the 
-fundamental sync mechanism. 
+i.e. to avoid the issues described in the previous paragraph. That said, GitHub integration is probably more for the 
+benefit of users being able to collaborate with AI:s on the codebase rather than being the fundamental sync mechanism. 
 
 **NOTE:** When adding GitHub integration - connecting the project workspaces to repositories in GitHub - GitHub Webhooks
-would need to be set up, in order to notify the backend-server of any changes and, upon a change, pull the latest 
+would need to be set up, in order to notify the backend server of any changes and, upon a change, pull the latest 
 changes from the repository and - if it is the current workspace - rsync the changes to the current workspace, to 
 have the changes be reflected automatically in the dev server.
 
@@ -112,6 +122,7 @@ Unlike Lovable, long-running operations like prompts and workspace operations do
 the operations are fully completed. Therefore, it might appear (especially for prompts) that the application has hung. 
 To alleviate your fears, turn to the console running `docker compose up` and you most likely see that the application
 (Claude) is hard at work.
+
 
 ### TODO
 
