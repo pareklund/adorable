@@ -10,7 +10,7 @@ Adorable is a Lovable clone written mainly in TypeScript.
 adorable/
 ├── backend/                    # Backend API server
 │   └── adorable-backend/       #   Node.js/TypeScript backend with Claude Code integration
-├── client/                     # Frontend applications
+├── client/                     # Frontend application
 │   ├── adorable-chat-connect/  #   Main React UI for chat interface and project management
 ├── dev-server/                 # Development server container setup
 ├── doc/                        # Documentation and screenshots
@@ -34,7 +34,7 @@ docker compose build
 docker compose up
 ```
 
-NOTE: Make sure you have an .env file in the backend/adorable-backend folder, containing at least the following
+NOTE: Make sure you have an .env file in the `backend/adorable-backend` folder, containing at least the following
 environment variable:
 
 ```
@@ -52,7 +52,7 @@ It consists of the following components:
 
 ### The UI
 
-**Project location:** client/adorable-chat-connect
+**Project location:** `client/adorable-chat-connect`
 
 Created largely in Lovable and providing the following features:
 
@@ -63,7 +63,7 @@ Created largely in Lovable and providing the following features:
 
 ### The Backend Server (API Server)
 
-**Project location:** backend/adorable-backend
+**Project location:** `backend/adorable-backend`
 
 Handles/executes prompts and manages project workspaces.
 
@@ -150,6 +150,11 @@ the operations are fully completed. Therefore, it might appear (especially for p
 To alleviate your fears, turn to the console running `docker compose up` and you most likely see that the application
 (Claude) is hard at work.
 
+### No MCP Integration
+
+Initially, I had the ambition of utilizing MCP for generating apps (e.g. for generalizing/simplifying GitHub- and 
+Supabase integration), but I didn't get the time. The Services button in the main page (initial) prompt is a remnant 
+of that.
 
 ### TODO
 
