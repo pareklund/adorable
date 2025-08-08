@@ -153,12 +153,15 @@ To alleviate your fears, turn to the console running `docker compose up` and you
 
 ### TODO
 
-There are definitely more considerations and limitations, but I am getting too tired to write more at the moment. 
-I will continue writing tomorrow or upon request.
+There are most certainly more considerations and limitations, but perhaps that can be discussed in person in a possible
+follow-up meeting.
 
 Also, I really want to clean up the code. I just managed to finish implementing the needed functionality in time. 
 Just to state that the current code quality is NOT representative of my normal work, but rather that sometimes one 
 has to make hard priorities and cut some corners (at least temporarily) to get through the gates in time.
+
+**NOTE:** I will reach out to my contact person (Kritika) and ask whether I should do this or not, or whether this
+(also) could be a subject for a possible follow-up meeting.
 
 ## Screenshots
 
