@@ -75,7 +75,7 @@ Here follows a list of considerations and limitations in no particular order:
 
 ### Single-User Only
 
-The current setup is only for local, one user scenarios. In particular, the backend- and dev server assumes there is 
+The current setup is only for local, one user scenarios. In particular, the backend- and dev server assume there is 
 always just one (1) active workspace/project. Perhaps for an app like this - that creates and manages other apps and 
 all its files - it might not be as easy to achieve multi-tenancy as in more classic server applications, but still.
 
