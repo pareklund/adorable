@@ -100,7 +100,7 @@ The current setup is only for local, one user scenarios. In particular, the back
 always just one (1) active workspace/project. Perhaps for an app like this - that creates and manages other apps and 
 all its files - it might not be as easy to achieve multi-tenancy as in more classic server applications, but still.
 
-### Claud Code Doing All The Heavy Lifting
+### Claude Code Doing All The Heavy Lifting
 
 Arguably, Adorable is a Lovable wrapper on top of Claude Code. It was basically the only feasible way of getting 
 something functional up so quickly, but a real implementation would probably have:
@@ -113,8 +113,8 @@ something functional up so quickly, but a real implementation would probably hav
 **NOTE:** I had the intention of guiding Claude Code using
 [the leaked Lovable system prompt](https://github.com/dontriskit/awesome-ai-system-prompts/tree/main/Loveable), but 
 adjusting it to Claude Code and separating out any framework-specific instructions into their own directories (thus, the 
-currently unused top-level directory `system-prompts` and its sub-directories), so as to optimize for generating using 
-other tools/frameworks as well, but (unsurprisingly) I didn't get that far during the time provided.
+currently unused top-level directory `system-prompts` and its sub-directories), so as to optimize for generating apps 
+using other tools/frameworks as well, but (unsurprisingly) I didn't get that far during the time provided.
 
 ### Docker Compose Setup
 
@@ -124,7 +124,7 @@ host, which is inoptimal and somewhat limits deployment options.
 
 Also, the shared volume setup makes the Docker build phase a bit more involved - with the need for an init container - 
 and requires the dev server to perform `npm install` during startup instead of during build time. Granted, this might be
-avoidable, but given my limited recent work with Docker recently and the limited time allotted for the exercise, I 
+avoidable, but given my limited recent work with Docker and the limited time allotted for the exercise, I 
 settled for the current solution.
 
 ### Missing GitHub Integration
@@ -165,7 +165,7 @@ Also, I really want to clean up the code. I just managed to finish implementing 
 Just to state that the current code quality is NOT representative of my normal work, but rather that sometimes one 
 has to make hard priorities and cut some corners (at least temporarily) to get through the gates in time.
 
-**NOTE:** I will reach out to my contact person (Kritika) and ask whether I should do this or not, or whether this
+**NOTE:** I have reached out to my contact person (Kritika) and asked whether I should do this or not, or whether this
 (also) could be a subject for a possible follow-up meeting.
 
 ## Screenshots
