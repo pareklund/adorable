@@ -4,6 +4,27 @@
 
 Adorable is a Lovable clone written mainly in TypeScript.
 
+## Project Structure
+
+```
+adorable/
+├── backend/                    # Backend API server
+│   └── adorable-backend/       #   Node.js/TypeScript backend with Claude Code integration
+├── client/                     # Frontend applications
+│   ├── adorable-chat-connect/  #   Main React UI for chat interface and project management
+├── dev-server/                 # Development server container setup
+├── doc/                        # Documentation and screenshots
+│   └── images/                 #   Application screenshots
+├── scaffolding/                # Project templates for new workspaces
+│   ├── common/                 #   Shared scaffolding resources (none yet)
+│   └── ts-react-vite-tailwind/ #   TypeScript React template
+├── system-prompts/             # AI system prompts for different project types (not yet used)
+├── workspaces/                 # Active project workspaces (generated apps)
+│   ├── current/                #   Currently active workspace (generated/managed by Docker and backend server)
+│   └── [project-ids]/          #   Individual project directories (generated/managed by backend server)
+└── docker-compose.yaml         # Container orchestration configuration
+```
+
 ## How to Run
 
 Just issue:
